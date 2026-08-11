@@ -10,9 +10,7 @@
 MODULE conditioners_mod
     USE utils_mod
     IMPLICIT NONE
-    INTEGER, PARAMETER :: pf  = SELECTED_REAL_KIND(15, 307)
     PUBLIC
-    PRIVATE pf
 CONTAINS
 
 !> @brief conditioner for the total angular momentum
@@ -32,12 +30,12 @@ CONTAINS
 !! @calledby
 SUBROUTINE contotangmom (J, ms, qs, ps, ier)
 ! CONditioner for the TOTal ANGular MOMentum
-    REAL(pf), INTENT(IN) :: J(3), ms(:), qs(:,:)
-    REAL(pf), INTENT(INOUT) :: ps(:,:)
+    REAL(8), INTENT(IN) :: J(3), ms(:), qs(:,:)
+    REAL(8), INTENT(INOUT) :: ps(:,:)
     INTEGER,  INTENT(OUT) :: ier
 
-    REAL(pf) :: J_now(3), inertia_tensor(3,3)
-    REAL(pf) :: rotation(3)
+    REAL(8) :: J_now(3), inertia_tensor(3,3)
+    REAL(8) :: rotation(3)
     INTEGER  :: p
 
     J_now = total_angular_momentum(qs, ps)
@@ -71,13 +69,13 @@ END SUBROUTINE
 !! @calledby
 SUBROUTINE contotene (E, ms, qs, ps, G, soft)
 ! CONditioner for the TOTal ENErgy
-    REAL(pf), INTENT(IN)    :: E
-    REAL(pf), INTENT(IN)    :: ms(:)
-    REAL(pf), INTENT(INOUT) :: qs(:,:), ps(:,:)
-    REAL(pf), INTENT(IN)    :: G, soft
+    REAL(8), INTENT(IN)    :: E
+    REAL(8), INTENT(IN)    :: ms(:)
+    REAL(8), INTENT(INOUT) :: qs(:,:), ps(:,:)
+    REAL(8), INTENT(IN)    :: G, soft
 
-    REAL(pf) :: kinect, potential
-    REAL(pf) :: scale_factor
+    REAL(8) :: kinect, potential
+    REAL(8) :: scale_factor
 
     kinect = kinect_energy(ms, ps)
     potential = potential_energy(ms, qs, G, soft)
@@ -96,7 +94,7 @@ SUBROUTINE contotene (E, ms, qs, ps, G, soft)
     IF (E < 0) THEN
         ! if soft==0, the potential energy is homogeneous so we can apply a homothety
         IF (soft == 0) THEN
-            scale_factor = 1.0_pf / (E/potential + 1.0_pf)
+            scale_factor = 1.0d0 / (E/potential + 1.0d0)
             qs = scale_factor * qs
         ! if soft!=0, we need to apply an iterative method to achieve the desired energy
         ELSE
@@ -126,26 +124,26 @@ END SUBROUTINE
 !! @calledby contotene
 SUBROUTINE conpotenesof (E, ms, qs, ps, G, soft, ini_guess)
 ! CONditioner for the POTential ENErgy SOFtened
-    REAL(pf), INTENT(IN)    :: E, ms(:)
-    REAL(pf), INTENT(INOUT) :: qs(:,:)
-    REAL(pf), INTENT(IN)    :: ps(:,:), G, soft
-    REAL(pf), INTENT(IN), OPTIONAL :: ini_guess
+    REAL(8), INTENT(IN)    :: E, ms(:)
+    REAL(8), INTENT(INOUT) :: qs(:,:)
+    REAL(8), INTENT(IN)    :: ps(:,:), G, soft
+    REAL(8), INTENT(IN), OPTIONAL :: ini_guess
 
     INTEGER  :: N
-    REAL(pf) :: pe ! potential energy
-    REAL(pf) :: ke ! kinect energy
+    REAL(8) :: pe ! potential energy
+    REAL(8) :: ke ! kinect energy
     INTEGER  :: i, p1, p2
-    REAL(pf) :: qab(3) ! qab = qb - qa
-    REAL(pf), ALLOCATABLE :: dist2(:) ! mutual distances squared
-    REAL(pf), ALLOCATABLE :: ms2(:)   ! product of every two different masses
+    REAL(8) :: qab(3) ! qab = qb - qa
+    REAL(8), ALLOCATABLE :: dist2(:) ! mutual distances squared
+    REAL(8), ALLOCATABLE :: ms2(:)   ! product of every two different masses
 
-    REAL(pf) :: newton_cnst
-    REAL(pf) :: newton_error
-    REAL(pf) :: newton_approx
+    REAL(8) :: newton_cnst
+    REAL(8) :: newton_error
+    REAL(8) :: newton_approx
     INTEGER  :: newton_counter ! counter of newton iterations
-    REAL(pf) :: pot_factor, pot_der_factor ! potential energy and its derivative wrt factor
-    REAL(pf) :: den ! denominator
-    REAL(pf), ALLOCATABLE :: qs_factor(:,:)
+    REAL(8) :: pot_factor, pot_der_factor ! potential energy and its derivative wrt factor
+    REAL(8) :: den ! denominator
+    REAL(8), ALLOCATABLE :: qs_factor(:,:)
 
     N = SIZE(ms)
     ALLOCATE(dist2(INT(N*(N-1)/2)))
@@ -155,7 +153,7 @@ SUBROUTINE conpotenesof (E, ms, qs, ps, G, soft, ini_guess)
     ! vectors to facilitate the evaluation of the potential and its derivative
     ! and the kinect energy
     i = 1
-    pe = 0.0_pf
+    pe = 0.0d0
     ke = DOT_PRODUCT(ps(:,1),ps(:,1))/ms(1)
     DO p1 = 2, N
         ke = ke + DOT_PRODUCT(ps(:,p1),ps(:,p1))/ms(p1)
@@ -167,27 +165,27 @@ SUBROUTINE conpotenesof (E, ms, qs, ps, G, soft, ini_guess)
             i = i + 1
         END DO
     END DO
-    ke = 0.5_pf * ke
+    ke = 0.5d0 * ke
 
     !! application of the Newton method
     newton_cnst = - soft * (E - ke)
 
     ! initial guess
-    newton_error = 1.0_pf
+    newton_error = 1.0d0
     IF (PRESENT(ini_guess)) THEN
         newton_approx = ini_guess / soft
     ELSE
-        newton_approx = 1.0_pf / (soft * (E/pe + 1.0_pf))
+        newton_approx = 1.0d0 / (soft * (E/pe + 1.0d0))
     ENDIF
     ! iterations
     newton_counter = 1
     DO WHILE (newton_error > 1E-15 .AND. newton_counter < 50)
         ! potential energy and its derivative wrt the scale factor
-        pot_factor = 0.0_pf
-        pot_der_factor = 0.0_pf
+        pot_factor = 0.0d0
+        pot_der_factor = 0.0d0
 
         DO i = 1, SIZE(dist2)
-            den = SQRT(newton_approx*newton_approx*dist2(i) + 1.0_pf)
+            den = SQRT(newton_approx*newton_approx*dist2(i) + 1.0d0)
             pot_factor     = pot_factor - G * ms2(i)/den
             pot_der_factor = pot_der_factor + G * ms2(i)/(den**3)
         END DO
@@ -229,18 +227,18 @@ END SUBROUTINE
 !! @calledby
 SUBROUTINE conpotenesofequ (E, ms, qs, G, soft, ini_guess)
 ! CONditioner for the POTential ENErgy SOFtened in EQUilibria
-    REAL(pf), INTENT(IN) :: E, ms(:)
-    REAL(pf), INTENT(INOUT) :: qs(:,:)
-    REAL(pf), INTENT(IN) :: G, soft
-    REAL(pf), INTENT(IN), OPTIONAL :: ini_guess
+    REAL(8), INTENT(IN) :: E, ms(:)
+    REAL(8), INTENT(INOUT) :: qs(:,:)
+    REAL(8), INTENT(IN) :: G, soft
+    REAL(8), INTENT(IN), OPTIONAL :: ini_guess
 
     INTEGER :: N
-    REAL(pf), ALLOCATABLE :: forces(:,:), forces_der(:,:), qs_factor(:,:)
-    REAL(pf) :: pot_factor, pot_der_factor
-    REAL(pf) :: newton_error, newton_approx
+    REAL(8), ALLOCATABLE :: forces(:,:), forces_der(:,:), qs_factor(:,:)
+    REAL(8) :: pot_factor, pot_der_factor
+    REAL(8) :: newton_error, newton_approx
     INTEGER  :: newton_counter
     INTEGER  :: p1, p2
-    REAL(pf) :: qab(3), dist2, den, f, f_der, Fab(3)
+    REAL(8) :: qab(3), dist2, den, f, f_der, Fab(3)
 
     N = SIZE(ms)
     ALLOCATE(forces(3,N))
@@ -248,16 +246,16 @@ SUBROUTINE conpotenesofequ (E, ms, qs, G, soft, ini_guess)
     ALLOCATE(qs_factor(3,N))
 
     ! Newton error
-    newton_error = 1.0_pf
-    newton_approx = 1.0_pf
+    newton_error = 1.0d0
+    newton_approx = 1.0d0
     IF (PRESENT(ini_guess)) newton_approx = ini_guess
     newton_counter = 0
     ! iterations
     DO WHILE (newton_error > 1E-15 .AND. newton_counter < 10)
-        forces = 0.0_pf
-        forces_der = 0.0_pf
-        pot_factor = 0.0_pf
-        pot_der_factor = 0.0_pf
+        forces = 0.0d0
+        forces_der = 0.0d0
+        pot_factor = 0.0d0
+        pot_der_factor = 0.0d0
         DO p1 = 2, N
             DO p2 = 1, p1 - 1
                 qab = qs(:,p2) - qs(:,p1)
@@ -283,16 +281,16 @@ SUBROUTINE conpotenesofequ (E, ms, qs, G, soft, ini_guess)
             END DO
         END DO
 
-        f = 2.0_pf * (E - pot_factor/newton_approx)
-        f_der = 2.0_pf * pot_factor / (newton_approx**2)
-        f_der = f_der - 2.0_pf * pot_der_factor * soft * soft/(newton_approx**4)
+        f = 2.0d0 * (E - pot_factor/newton_approx)
+        f_der = 2.0d0 * pot_factor / (newton_approx**2)
+        f_der = f_der - 2.0d0 * pot_der_factor * soft * soft/(newton_approx**4)
         DO p1 = 1, N
             ! forces
             f = f + DOT_PRODUCT(forces(:,p1), qs(:,p1)) / newton_approx
 
             ! forces derivative wrt the parameter
             f_der = f_der - DOT_PRODUCT(forces(:,p1), qs(:,p1)) / (newton_approx**2)
-            f_der = f_der + DOT_PRODUCT(forces_der(:,p1), qs(:,p1)) * 3.0_pf * soft * soft/(newton_approx**4)
+            f_der = f_der + DOT_PRODUCT(forces_der(:,p1), qs(:,p1)) * 3.0d0 * soft * soft/(newton_approx**4)
         END DO
 
         ! Newton method
@@ -300,8 +298,8 @@ SUBROUTINE conpotenesofequ (E, ms, qs, G, soft, ini_guess)
 
         ! Newton error
         qs_factor = newton_approx * qs
-        forces = 0.0_pf
-        pot_factor = 0.0_pf
+        forces = 0.0d0
+        pot_factor = 0.0d0
         DO p1 = 2, N
             DO p2 = 1, p1 - 1
                 qab = qs_factor(:,p2) - qs_factor(:,p1)
@@ -316,11 +314,11 @@ SUBROUTINE conpotenesofequ (E, ms, qs, G, soft, ini_guess)
                 pot_factor = pot_factor - f / den
             END DO
         END DO
-        newton_error = 2.0_pf * (E - pot_factor)
+        newton_error = 2.0d0 * (E - pot_factor)
         DO p1 = 1, N
             newton_error = newton_error + DOT_PRODUCT(forces(:,p1), qs_factor(:,p1))
         END DO
-        newton_error = ABS(newton_error) / (3.0_pf * N)
+        newton_error = ABS(newton_error) / (3.0d0 * N)
         
         newton_counter = newton_counter + 1
     END DO
@@ -345,9 +343,9 @@ END SUBROUTINE
 !! @calledby
 SUBROUTINE comori (ms, qs)
 ! COM to ORIgin
-    REAL(pf), INTENT(IN) :: ms(:)
-    REAL(pf), INTENT(INOUT) :: qs(:,:)
-    REAL(pf) :: com(3)
+    REAL(8), INTENT(IN) :: ms(:)
+    REAL(8), INTENT(INOUT) :: qs(:,:)
+    REAL(8) :: com(3)
     INTEGER  :: p
 
     com = center_of_mass(ms, qs)
@@ -371,10 +369,10 @@ END SUBROUTINE
 !! @calledby
 SUBROUTINE contotlinmom (P, ps, ws)
 ! CONditioner for the TOTal LINear MOMentum
-    REAL(pf), INTENT(IN) :: P(3)
-    REAL(pf), INTENT(INOUT) :: ps(:,:)
-    REAL(pf), INTENT(IN) :: ws(:)
-    REAL(pf) :: pcm(3)
+    REAL(8), INTENT(IN) :: P(3)
+    REAL(8), INTENT(INOUT) :: ps(:,:)
+    REAL(8), INTENT(IN) :: ws(:)
+    REAL(8) :: pcm(3)
     INTEGER  :: a
 
     pcm = (total_linear_momentum(ps) - P)/SUM(ws)
@@ -417,25 +415,25 @@ END SUBROUTINE
 !! @calledby
 SUBROUTINE coninivalite (ms, qs, ps, G, soft, ier, E, J_par, P_par, nitermax_par)
 ! CONditioner for INItial VALues ITErative
-    REAL(pf), INTENT(IN) :: ms(:)
-    REAL(pf), INTENT(INOUT) :: qs(:,:), ps(:,:)
-    REAL(pf), INTENT(IN) :: G, soft, E
+    REAL(8), INTENT(IN) :: ms(:)
+    REAL(8), INTENT(INOUT) :: qs(:,:), ps(:,:)
+    REAL(8), INTENT(IN) :: G, soft, E
     INTEGER,  INTENT(INOUT) :: ier
-    REAL(pf), INTENT(IN), OPTIONAL :: J_par(3), P_par(3)
+    REAL(8), INTENT(IN), OPTIONAL :: J_par(3), P_par(3)
     INTEGER,  INTENT(IN), OPTIONAL :: nitermax_par
     
-    REAL(pf) :: error_limit = 1E-8
+    REAL(8) :: error_limit = 1E-8
 
-    REAL(pf) :: J(3), P(3)
+    REAL(8) :: J(3), P(3)
     INTEGER  :: nitermax
-    REAL(pf) :: error_E, error_P, error_J, error_all
+    REAL(8) :: error_E, error_P, error_J, error_all
     INTEGER  :: step
 
     nitermax = 10
     IF (PRESENT(nitermax_par)) nitermax = nitermax_par
 
-    J = 0.0_pf
-    P = 0.0_pf
+    J = 0.0d0
+    P = 0.0d0
     IF (PRESENT(J_par)) J = J_par
     IF (PRESENT(P_par)) P = P_par
 
@@ -502,23 +500,23 @@ END SUBROUTINE
 !! @calledby
 SUBROUTINE coninivaldir (ms, qs, ps, G, ier, E, J_par, P_par)
 ! CONditioner for INItial VALues DIRect
-    REAL(pf), INTENT(IN) :: ms(:)
-    REAL(pf), INTENT(INOUT) :: qs(:,:), ps(:,:)
-    REAL(pf), INTENT(IN) :: G, E
-    REAL(pf), INTENT(IN), OPTIONAL :: J_par(3), P_par(3)
+    REAL(8), INTENT(IN) :: ms(:)
+    REAL(8), INTENT(INOUT) :: qs(:,:), ps(:,:)
+    REAL(8), INTENT(IN) :: G, E
+    REAL(8), INTENT(IN), OPTIONAL :: J_par(3), P_par(3)
     INTEGER,  INTENT(OUT) :: ier
 
-    REAL(pf) :: J(3), P(3)
-    REAL(pf) :: energy, linear(3), angular(3), Minv, pot
-    REAL(pf) :: inertia_tensor(3,3) ! W_T
-    REAL(pf) :: rot(3), rot_(3)     ! omega, omega_tilde
-    REAL(pf) :: alpha ! positions homothety factor
-    REAL(pf) :: sigma_tilde
-    REAL(pf) :: S1, S2, beta ! velocities factors
+    REAL(8) :: J(3), P(3)
+    REAL(8) :: energy, linear(3), angular(3), Minv, pot
+    REAL(8) :: inertia_tensor(3,3) ! W_T
+    REAL(8) :: rot(3), rot_(3)     ! omega, omega_tilde
+    REAL(8) :: alpha ! positions homothety factor
+    REAL(8) :: sigma_tilde
+    REAL(8) :: S1, S2, beta ! velocities factors
     INTEGER  :: a
 
-    J = 0.0_pf
-    P = 0.0_pf
+    J = 0.0d0
+    P = 0.0d0
     IF (PRESENT(J_par)) J = J_par
     IF (PRESENT(P_par)) P = P_par
 
@@ -526,10 +524,10 @@ SUBROUTINE coninivaldir (ms, qs, ps, G, ier, E, J_par, P_par)
     CALL comori(ms, qs)
 
     ! evaluate first integrals and other values
-    energy  = total_energy(ms, qs, ps, G, 0.0_pf)
+    energy  = total_energy(ms, qs, ps, G, 0.0d0)
     linear  = total_linear_momentum(ps)
     angular = total_angular_momentum(qs, ps)
-    Minv    = 1.0_pf / SUM(ms)
+    Minv    = 1.0d0 / SUM(ms)
     pot     = energy - kinect_energy(ms, ps)
 
     ! to evaluate the beta factor
@@ -539,7 +537,7 @@ SUBROUTINE coninivaldir (ms, qs, ps, G, ier, E, J_par, P_par)
 
     ! for nonnegative energy, we just need to change the velocities
     ! for negative energy, its necessary an increment to beta exists
-    alpha = 1.0_pf
+    alpha = 1.0d0
     IF (E < 0) alpha = alpha + E / pot
 
     ! if is there angular (but not the linear) is necessary to add the
@@ -551,15 +549,15 @@ SUBROUTINE coninivaldir (ms, qs, ps, G, ier, E, J_par, P_par)
     ! if is there no angular momentum but have linear, is necessary to
     ! add the linear contribution to beta exists
     ELSE IF (NORM2(P) > 0) THEN
-        alpha = alpha - 0.5_pf * Minv * NORM2(P)**2 / pot
+        alpha = alpha - 0.5d0 * Minv * NORM2(P)**2 / pot
     ENDIF
 
     ! evaluating beta
-    S1 = (energy - pot) - 0.5_pf * Minv * NORM2(linear)**2 + 0.5_pf * DOT_PRODUCT(angular, rot)
-    S2 = (0.5_pf * Minv * NORM2(P)**2 - 0.5_pf * alpha * alpha * DOT_PRODUCT(J, rot_))
+    S1 = (energy - pot) - 0.5d0 * Minv * NORM2(linear)**2 + 0.5d0 * DOT_PRODUCT(angular, rot)
+    S2 = (0.5d0 * Minv * NORM2(P)**2 - 0.5d0 * alpha * alpha * DOT_PRODUCT(J, rot_))
     beta = SQRT((E - alpha * pot - S2)/S1)
 
-    IF (alpha == 0.0_pf .OR. beta == 0.0_pf) THEN
+    IF (alpha == 0.0d0 .OR. beta == 0.0d0) THEN
         ier = 4
         RETURN
     ENDIF
@@ -599,28 +597,28 @@ END SUBROUTINE
 !! @calledby
 SUBROUTINE coninivalaar (ms, qs, ps, G, ier)
 ! CONditioner for INItial VALues AARseth
-    REAL(pf), INTENT(INOUT) :: ms(:), qs(:,:), ps(:,:)
-    REAL(pf), INTENT(IN) :: G
+    REAL(8), INTENT(INOUT) :: ms(:), qs(:,:), ps(:,:)
+    REAL(8), INTENT(IN) :: G
     INTEGER,  INTENT(INOUT) :: ier
     
-    REAL(pf) :: pot, kin ! potential and kinect energies
-    REAL(pf) :: Qv   ! virial radius
-    REAL(pf) :: beta ! scale factor
+    REAL(8) :: pot, kin ! potential and kinect energies
+    REAL(8) :: Qv   ! virial radius
+    REAL(8) :: beta ! scale factor
     
     ! normalize the masses to 1/N
-    ms = 1.0_pf / SIZE(ms)
+    ms = 1.0d0 / SIZE(ms)
 
     ! conditionate the first integrals to zero
-    CALL coninivaldir(ms, qs, ps, G, ier, 0.0_pf)
+    CALL coninivaldir(ms, qs, ps, G, ier, 0.0d0)
     IF (ier .NE. 0) THEN
         RETURN
     ENDIF
 
     ! Aarseth method
-    pot  = potential_energy(ms, qs, G, 0.0_pf)
+    pot  = potential_energy(ms, qs, G, 0.0d0)
     kin  = kinect_energy(ms, ps)
-    Qv   = SQRT(0.5_pf * ABS(pot) / kin)
-    beta = 0.5_pf * pot / (-0.25_pf)
+    Qv   = SQRT(0.5d0 * ABS(pot) / kin)
+    beta = 0.5d0 * pot / (-0.25d0)
 
     ! conditionate
     ps = ps * Qv / SQRT(beta)
@@ -649,50 +647,50 @@ END SUBROUTINE
 !! @calledby
 SUBROUTINE coninivalaarmod (ms, qs, ps, G, soft, ier)
 ! CONditioner for INItial VALues AARseth MODified
-    REAL(pf), INTENT(INOUT) :: ms(:), qs(:,:), ps(:,:)
-    REAL(pf), INTENT(IN)  :: G, soft
+    REAL(8), INTENT(INOUT) :: ms(:), qs(:,:), ps(:,:)
+    REAL(8), INTENT(IN)  :: G, soft
     INTEGER, INTENT(INOUT) :: ier
     
-    REAL(pf) :: pot, kin ! potential and kinect energies
-    REAL(pf) :: Qv   ! virial radius
-    REAL(pf) :: beta ! scale factor
+    REAL(8) :: pot, kin ! potential and kinect energies
+    REAL(8) :: Qv   ! virial radius
+    REAL(8) :: beta ! scale factor
     
     ! normalize the masses to 1/N
-    ms = 1.0_pf / SIZE(ms)
+    ms = 1.0d0 / SIZE(ms)
 
     ! conditionate the first integrals to zero
-    IF (soft == 0.0_pf) THEN
-        CALL coninivaldir(ms, qs, ps, G, ier, 0.0_pf)
+    IF (soft == 0.0d0) THEN
+        CALL coninivaldir(ms, qs, ps, G, ier, 0.0d0)
     ELSE
-        CALL coninivalite(ms, qs, ps, G, soft, ier, 0.0_pf)
+        CALL coninivalite(ms, qs, ps, G, soft, ier, 0.0d0)
     ENDIF
 
     ! Aarseth method
     pot  = potential_energy(ms, qs, G, soft)
     kin  = kinect_energy(ms, ps)
-    Qv   = SQRT(0.5_pf * ABS(pot) / kin)
-    beta = 0.5_pf * pot / (-0.25_pf)
+    Qv   = SQRT(0.5d0 * ABS(pot) / kin)
+    beta = 0.5d0 * pot / (-0.25d0)
 
     ! conditionate the velocities
     ps = ps * Qv / SQRT(beta)
 
     ! if no softening, just apply the same as the original method
-    IF (soft == 0.0_pf) THEN
+    IF (soft == 0.0d0) THEN
         qs = qs * beta
 
     ! if using softening, it needs to be iterative and uses beta/soft as initial guess
     ELSE
-        CALL conpotenesofequ(-0.25_pf, ms, qs, G, soft, beta)
+        CALL conpotenesofequ(-0.25d0, ms, qs, G, soft, beta)
         pot = potential_energy(ms, qs, G, soft)
 
         ! verify if its possible to reconditionate
-        IF (4.0_pf * ABS(pot) < 1.0_pf) THEN
+        IF (4.0d0 * ABS(pot) < 1.0d0) THEN
             ier = 4
             RETURN
         ENDIF
 
         ! reconditionate the linear momentum
-        beta = SQRT(4.0_pf * ABS(pot) - 1.0_pf)
+        beta = SQRT(4.0d0 * ABS(pot) - 1.0d0)
         ps = ps * beta
     ENDIF
     

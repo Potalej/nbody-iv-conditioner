@@ -1,0 +1,27 @@
+[build-system]
+requires = [
+  "scikit-build-core>=0.9",
+  "numpy",
+  "f2py-cmake",
+]
+build-backend = "scikit_build_core.build"
+
+[project]
+name = "nbody-iv-conditioner"
+version = "0.0.1"
+description = "A gravitational N-body initial values conditioner"
+authors = [{ name = "potalej" }]
+readme = "python/README.md"
+license = { file = "python/LICENSE" }
+dependencies = ["numpy"]
+
+[tool.scikit-build]
+cmake.source-dir = "python"
+wheel.packages = ["src/nbody_iv_conditioner"]
+
+[tool.scikit-build.sdist]
+include = [
+  "python/**",
+  "fortran/**",
+  "src/**"
+]
