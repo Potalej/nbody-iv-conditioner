@@ -1,0 +1,11 @@
+# general
+*
+!*/
+!*.*
+!*Makefile
+*.mod
+*.o
+*.a
+
+# documentation
+doc/build
