@@ -6,6 +6,7 @@
 *.mod
 *.o
 *.a
+!*LICENSE
 
 # documentation
 doc/build

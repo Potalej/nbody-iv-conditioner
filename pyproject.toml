@@ -12,7 +12,6 @@ version = "0.0.1"
 description = "A gravitational N-body initial values conditioner"
 authors = [{ name = "potalej" }]
 readme = "python/README.md"
-license = { file = "python/LICENSE" }
 dependencies = ["numpy"]
 
 [tool.scikit-build]
