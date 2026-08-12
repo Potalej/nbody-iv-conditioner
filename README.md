@@ -4,6 +4,30 @@ A N-body initial values conditioner. Given state vectors and desired first integ
 
 The theory behind all this thing is in the [documentation](doc/documentation.pdf).
 
+## Python interface
+
+The python interface is available on a [PyPI repository](https://pypi.org/project/nbody-iv-conditioner/) and to install it just run
+
+```bash
+pip install nbody-iv-conditioner
+```
+
+The interface is almost the same as the Fortran, and it have two big classes: `Utils` and `Conditioners`. Although the modules are available too, the parameters needs to be in Fortran format in many functions (because in Fortran they may be subroutines with `intent(inout)`), and using the classes `Utils` and `Conditioners` all the functions have the automatic conversor.
+
+```python
+import nbody_iv_conditioner as nivc
+import numpy as np
+
+N = 10
+ms = np.ones(N)/N
+qs = 2.0 * np.random.random((3,N)) - 1.0
+
+# move the com to origin
+ms, qs, ps = nivc.Conditioners.comori(ms, qs)
+
+com = nivc.Utils.center_of_mass(ms, qs)
+```
+
 ## Fortran interface
 
 To compile the Fortran interface, just go the directory `fortran` and run

@@ -46,7 +46,7 @@ jobs:
           path: ./wheelhouse/*.whl
   
   publish-testpypi:
-    name: publish para o TestPyPI
+    name: publish to TestPyPI
     needs:
     - build
     runs-on: ubuntu-latest
@@ -69,3 +69,25 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/
+
+  publish-pypi:
+    name: >-
+      publish to PyPI
+    needs:
+    - build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/nbody-iv-conditioner
+    permissions:
+      id-token: write  # IMPORTANT: mandatory for trusted publishing
+
+    steps:
+    - name: Downloading all the dists
+      uses: actions/download-artifact@v6
+      with:
+        name: python-package-distributions
+        path: dist/
+    - name: Publishing on PyPI
+      uses: pypa/gh-action-pypi-publish@release/v1

@@ -68,7 +68,9 @@ class Utils:
         """
         qs = fix_vector(qs)
         return utils_mod.total_angular_momentum(ms, qs)
-    
+
+
+ 
 class Conditioners:
     def comori (ms:np.array, qs:np.array):
         """

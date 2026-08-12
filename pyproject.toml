@@ -11,7 +11,7 @@ name = "nbody-iv-conditioner"
 version = "0.0.2"
 description = "A gravitational N-body initial values conditioner"
 authors = [{ name = "potalej" }]
-readme = "python/README.md"
+readme = "README.md"
 dependencies = ["numpy"]
 
 [tool.scikit-build]
