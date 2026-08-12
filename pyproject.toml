@@ -8,7 +8,7 @@ build-backend = "scikit_build_core.build"
 
 [project]
 name = "nbody-iv-conditioner"
-version = "0.0.2"
+version = "0.0.3"
 description = "A gravitational N-body initial values conditioner"
 authors = [{ name = "potalej" }]
 readme = "README.md"
